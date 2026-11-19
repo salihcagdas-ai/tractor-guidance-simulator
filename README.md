@@ -1,36 +1,38 @@
-# Traktör Dümenleme Simülasyonu
+# Tractor Guidance Simulator
 
-Tarlada köşeye gelince ilacı kapatır, dönüşü alır ve yeni sırada tekrar açarım. Sonradan yalnız traktörün geçtiği çizgiye bakarsam nerede ilaç attığımı, nerede boş döndüğümü ayırt edemem. Bu yüzden **Mark 42**'yi geliştirirken traktörün yolunu ve arkasındaki aletin işlediği alanı ayrı kaydeden bir kabin tasarladım.
+When I reach the end of a row, I switch off the sprayer, turn the tractor and start spraying again on the next pass. The tire tracks show where I drove. They can't tell me where I applied the spray. I built **Mark 42** to record both the tractor's path and the strip its implement actually worked.
 
-**Salih Çağdaş** · Rota planlama, tablet için kabin arayüzü ve Raspberry Pi üzerinde sensör deneyleri
+**Salih Çağdaş** · Route planning, a tablet cab display and sensor testing on Raspberry Pi
 
-![Yapay üçgende 27 metrelik ilaç makinesinin hızlandırılmış oynatımı. Traktör dönerken ilaç izi kesiliyor, yeni sıraya geçince devam ediyor.](gorseller/ilaclama-rotasi.gif)
+![Accelerated replay of a 27 m sprayer on a synthetic triangular field. The sprayed strip ends at each turn and resumes on the next pass.](images/spraying-route.gif)
 
-Yukarıdaki üçgen, deneme için çizilmiş bir tarla. Ok traktörü, yeşil şeritler ilaçlanan yeri gösteriyor. Dönüşte **alet kapalı gidilen yol** artarken yeni bir yeşil şerit oluşmuyor. 26 dakika 16 saniyenin sonunda içteki hatlar bitiyor. Kenarlarda sürücünün yaptığı işe ait kayıt bulunmadığından kabin orada hâlâ 30,03 dönüm açık gösteriyor.
+The arrow marks the tractor and each green strip shows a spray pass. During a turn, the distance traveled with the sprayer off increases while the sprayed area stays the same. The interior passes took **26 minutes 16 seconds** of simulated work. At the finish, the display still showed **3.003 hectares** with no recorded coverage because the example included no operator passes around the boundary.
 
-![Aynı işin kabin sonuç kartı. İç hedefte boşluk sıfırken tüm çalışma alanında kayıtsız kenarlar hâlâ açık.](gorseller/is-sonucu.png)
+![Cab summary at the end of the same job. The interior target is covered, while the field edges still have no recorded application.](images/job-summary.png)
 
-## Sürücü kabinde ne yapıyor?
+## What the operator can do
 
-1. **Aleti seçiyor.** Aynı tarla için 3,05 m silindir, 24 m gübre makinesi veya 27 m ilaç makinesi seçilebiliyor. Aletin eni ve çalışma yönü değişince kabin yeni hatları ve dönüşleri hesaplıyor. Silindir dönüşte kalkıyor, yeni hatta iniyor.
-2. **Kenarları kendisi işleyebiliyor.** Sürücünün alet açıkken yaptığı geçişler kaydedilince sistem kalan iç alanı buna göre planlıyor. Haritada sürücü de kendi işini ve tekrar geçilen yerleri görebiliyor.
-3. **Mola verip devam ediyor.** Raspberry Pi işlenen alanı, son hattı ve o hattaki konumu saklıyor. Kabin yeniden açıldığında sürücü kalan işi aynı rotadan sürdürebiliyor. [Tablet boyutunda kabin ekranı](gorseller/kabin.png)
+1. **Choose an implement and a heading.** The simulator can plan passes and turns for a 3.05 m roller, a 24 m fertilizer spreader or a 27 m sprayer on the same field. Changing the working width or direction produces a new route. The roller lifts for a turn and lowers on the next pass.
+2. **Record the operator's headland passes.** The operator can drive the edges and record passes with the implement engaged. The planner then uses that record to route the remaining interior work. The map shows which strips the operator covered and where application overlapped.
+3. **Pause and pick up where the job left off.** The Raspberry Pi saves the worked area, the current pass and the position along it. After a restart, the operator can resume the same route. [View the tablet cab display](images/cab-display.png)
 
-## İki deneyde ne öğrendim?
+The cab screenshots show the running simulation with the on-screen labels translated into English for this case study.
 
-| Soru | Deneyde gördüğüm |
+## What changed in testing?
+
+| Question | Result |
 | --- | --- |
-| Kenarı sürücünün işlediğini bilmek ne kazandırıyor? | Yapay dikdörtgende 24 m gübre makinesiyle tekrar gübrelenen yer **2.742 m²’den 91,2 m²’ye** düştü. Otomatik bölümde boş gidiş de **217,85 m’den 162,80 m’ye** indi. Sürücünün kendi geçiş süresi ayrıca hesaba katılmalı. [Altı rota, kapsama haritaları ve kenar deneyi](incelemeler/tarla-deneyi.md) |
-| GPS hem konumu hem hızı yanlış gösterirse ne olur? | Yalnız GPS'i kontrol ettiğimde hata **24 denemenin hiçbirinde** fark edilmedi. Bildirilen hareketi teker hızı, direksiyon açısı ve hareket sensörüyle karşılaştırınca **24 denemenin hepsinde** dümen izni kesildi. Başlangıçtan beri sabit kalan konum kayması yine algılanamadı. [Pi üzerinde hata ve yeniden başlatma deneyleri](incelemeler/konum-guvenligi.md) |
+| Does recording the operator's edge pass help? | On a synthetic rectangle, recording one pass with the 24 m spreader reduced the area fertilized more than once from **2,742 m² to 91.2 m²**. Automatic travel with the spreader off fell from **217.85 m to 162.80 m**. The operator's own time on that pass is separate. [Six routes and an edge-pass comparison](case-studies/field-coverage.md) |
+| What if GPS reports the wrong position and speed together? | A GPS-only check missed the fault **in all 24 runs**. Comparing the reported motion with wheel speed, steering angle and an inertial sensor triggered a steering cutoff **in all 24 runs**. A constant position error present from startup still went undetected. [Sensor faults and restart tests on the Pi](case-studies/position-integrity.md) |
 
-## Sistem bugün hangi aşamada?
+## Project status
 
-Kabin yazılımı Raspberry Pi'de çalışıyor. Tablet yerel ağdan bu bilgisayara bağlanıp rotayı ve iş kaydını gösteriyor. Traktörde kullanmak için tasarladığım düzende tarla kenarındaki taşınabilir baz, traktörün uydu alıcısına konum düzeltmesi sağlayacak. Motoru sürme iznini ayrı bir denetleyici yönetecek. Böylece kabin ekranı kapandığında işi kayıttan açmak ile direksiyona yeniden komut vermek iki ayrı karar olarak kalıyor.
+The cab software runs on a Raspberry Pi. A tablet connects over the local network to display the route and job record. The planned tractor installation adds a portable base station to send positioning corrections to the receiver on the tractor. A separate controller will decide when to enable the steering motor. Reopening a saved job and enabling the motor are separate operator actions in this design.
 
-| Aşama | Durum |
+| Phase | Status |
 | --- | --- |
-| **A · Yazılım ve simülasyon** | Rota planlama, kabin ekranı ve iş kaydı çalışıyor. Yapay tarlalarda alet izlerini, gerçek Raspberry Pi üzerinde de yeniden başlatmayı ve yazılımla üretilen sensör hatalarını denedim. |
-| **B · Tezgâh ve montaj** | Sırada yerel uydu düzeltme bazını, traktördeki alıcıyı, teker sensörlerini ve direksiyon motorunu birlikte denemek var. Elektrik kesildiğinde ve sürücü direksiyonu devraldığında ne olduğu bu aşamada ölçülecek. |
-| **C · Operatörlü saha deneyi** | Gerçek tarlada sıra takibi, tekrarlanan veya açık kalan yerler ve dümenlemeyi devralma henüz ölçülmedi. |
+| **A · Software and simulation** | The route planner, cab display and job records are working. I tested implement coverage on synthetic fields and ran restart and simulated sensor-fault tests on a physical Raspberry Pi. |
+| **B · Bench testing and installation** | The next step is to test the base station, receiver, wheel sensors and steering motor together, including power loss and manual steering takeover. |
+| **C · Field trials with an operator** | Row tracking, missed and repeated coverage, and steering takeover still need to be measured on the tractor. |
 
-© 2026 Salih Çağdaş. Metin ve görseller üzerindeki haklar saklıdır.
+© 2026 Salih Çağdaş. All rights reserved for the text and images.
