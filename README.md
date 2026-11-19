@@ -4,11 +4,19 @@ When I reach the end of a row, I switch off the sprayer, turn the tractor and st
 
 **Salih Çağdaş** · Route planning, a tablet cab display and sensor testing on Raspberry Pi
 
+[Route gallery](case-studies/route-gallery.md) · [Row-order comparison](case-studies/route-order.md) · [Validation results](case-studies/validation-results.md) · [Source availability](#source-availability)
+
 ![Accelerated replay of a 27 m sprayer on a synthetic triangular field. The sprayed strip ends at each turn and resumes on the next pass.](images/spraying-route.gif)
 
-The arrow marks the tractor and each green strip shows a spray pass. During a turn, the distance traveled with the sprayer off increases while the sprayed area stays the same. The interior passes took **26 minutes 16 seconds** of simulated work. At the finish, the display still showed **3.003 hectares** with no recorded coverage because the example included no operator passes around the boundary.
+The sprayer completed eight passes in **26 minutes 16 seconds** of simulated work. Watch the turn at the end of a green strip. The tractor keeps moving while the sprayed area stays the same. Over the full route, it traveled **716.69 m with the sprayer off**, or 37.3% of its 1.92 km path. At the finish the cab still showed 3.003 hectares with no recorded coverage along the edges. [Final cab readout](images/job-summary.png)
 
-![Cab summary at the end of the same job. The interior target is covered, while the field edges still have no recorded application.](images/job-summary.png)
+## Where the tractor actually goes
+
+![Tractor paths for a roller, spreader and sprayer on a rectangle and a triangle. Solid lines show work, dashed lines show inactive travel.](images/field-routes.png)
+
+The rectangle makes the difference easy to see. The spreader works the five rows in sequence. The sprayer visits rows **1 → 3 → 5 → 4 → 2**. Both finish the interior. On the triangle, the sprayer takes one fewer pass than the spreader but travels 305 m farther with the implement off. [Pass counts, distance and time for all six routes](case-studies/route-gallery.md)
+
+I also put Mark 42 and five Courseplay patterns on the **same 37 roller lanes**. All six covered the interior. Mark 42 spent **5 minutes 12 seconds less** on the modeled job than the next-fastest sequence, saving **312 m** with the roller inactive. [Compare all six lane orders](case-studies/route-order.md)
 
 ## What the operator can do
 
@@ -18,12 +26,20 @@ The arrow marks the tractor and each green strip shows a spray pass. During a tu
 
 The cab screenshots show the running simulation with the on-screen labels translated into English for this case study.
 
-## What changed in testing?
+## What one recorded headland pass changes
 
-| Question | Result |
+![Side-by-side replay of the same rectangular field, with and without one recorded spreader pass. Each clock tracks automatic work; the counters show inactive travel, repeat coverage and unworked area.](images/headland-comparison.gif)
+
+The blue strip on the right is the operator's earlier pass. With that work recorded, the planner placed the next five automatic passes differently. The repeated area fell from **2,742 m² to 91.2 m²**. The right-hand clock stops **57 seconds earlier**. Both clocks cover the automatic portion only. [Worked area, remaining ground and overlap for both runs](case-studies/field-coverage.md)
+
+## What the tests showed
+
+| Experiment | Recorded result |
 | --- | --- |
-| Does recording the operator's edge pass help? | On a synthetic rectangle, recording one pass with the 24 m spreader reduced the area fertilized more than once from **2,742 m² to 91.2 m²**. Automatic travel with the spreader off fell from **217.85 m to 162.80 m**. The operator's own time on that pass is separate. [Six routes and an edge-pass comparison](case-studies/field-coverage.md) |
-| What if GPS reports the wrong position and speed together? | A GPS-only check missed the fault **in all 24 runs**. Comparing the reported motion with wheel speed, steering angle and an inertial sensor triggered a steering cutoff **in all 24 runs**. A constant position error present from startup still went undetected. [Sensor faults and restart tests on the Pi](case-studies/position-integrity.md) |
+| A physical Raspberry Pi processed 312 simulated sensor runs | When GPS position and speed were wrong together, GPS alone missed the fault in 24/24 trials. Comparing wheel speed, steering angle and inertial measurements caught it in 24/24, after **1.82–4.70 s**. A fixed error present at startup remained undetected. [Position integrity](case-studies/position-integrity.md) |
+| A tractor model drove 12 physics scenarios | **8 finished and 4 handed control back**. The handovers occurred in mud, on a slope, on mixed soil and with unequal wheel grip. Those conditions still need field measurements. [Physics and software test results](case-studies/validation-results.md) |
+| The Pi rebooted with two jobs saved | One job was paused and the other was running. Both came back paused with their original route, position, elapsed time and worked area. Both finished after the operator resumed them. [Restart experiment](case-studies/position-integrity.md#where-does-a-job-resume-after-a-pi-restart) |
+| Software regression tests | The November 19 release passed **515 Python simulation checks** and **109 Node.js tests**. In a separate fault experiment, loss of motor feedback cut modeled steering permission after 80 ms. Physical motor response still requires a bench test. [Test groups and fault timings](case-studies/validation-results.md) |
 
 ## Project status
 
@@ -35,4 +51,8 @@ The cab software runs on a Raspberry Pi. A tablet connects over the local networ
 | **B · Bench testing and installation** | The next step is to test the base station, receiver, wheel sensors and steering motor together, including power loss and manual steering takeover. |
 | **C · Field trials with an operator** | Row tracking, missed and repeated coverage, and steering takeover still need to be measured on the tractor. |
 
-© 2026 Salih Çağdaş. All rights reserved for the text and images.
+## Source availability
+
+I maintain this public repository solely as a portfolio of the project. It contains selected simulation replays, route comparisons and test results. All original source code developed for Mark 42 is proprietary to Salih Çağdaş and is kept in a private repository. Third-party software retains its own licenses and copyright notices.
+
+© 2026 Salih Çağdaş. All rights reserved for the original project materials.

@@ -23,6 +23,10 @@ In all six runs, the uncovered area inside the interior target and the area work
 
 I repeated the rectangle test with the 24 m spreader. This time I recorded one simulated pass with the spreader on along an edge, then planned the route for the remaining work. The field, implement and heading stayed the same.
 
+![Two spreader replays on a shared simulation clock. Blue shows the recorded operator pass, green the automatic passes and orange repeat coverage.](../images/headland-comparison.gif)
+
+Both automatic routes use five passes and four turns. The recorded operator pass accounts for 6,432 m² before the right-hand replay starts. Watch the orange bands between automatic passes. In this example the change in their spacing accounts for the reduction in repeat coverage.
+
 | Measure | No edge pass recorded | One edge pass recorded |
 | --- | ---: | ---: |
 | Area fertilized more than once | 2,742.00 m² | 91.20 m² |
